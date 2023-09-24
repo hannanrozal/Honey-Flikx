@@ -333,6 +333,12 @@ button:focus {
         border-radius: 6px;
         transition: transform 0.3s, box-shadow 0.3s;
     }
+    .lightbox #embedFrame {
+        width: 96%;
+        height: 27%;
+        margin: 10% auto; /* Adjust the margin for mobile */
+        display: block;
+    }
 }
 
 
