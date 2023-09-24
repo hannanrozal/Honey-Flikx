@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <title>Honey Flikx</title>
+</head>
+<body>
+    <div class="navbar">
+        <a href="#" class="navbar-brand">Honey Flikx</a>
+        <ul class="navbar-links">
+            <li><a href="/Home.html" class="navbar-link">Home</a></li>
+            <li><a href="/movies.html" class="navbar-link">Movies</a></li>
+            <li><a href="/series.html" class="navbar-link">Series</a></li>
+            <li><a href="#" class="navbar-link">Search</a></li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="home-section">
+            <h2>Trending Right Now</h2>
+            <div class="content" id="trendingNow"></div>
+        </div>
+        <div class="home-section">
+            <h2>Movies</h2>
+            <div class="content" id="homeMovies"></div>
+        </div>
+        <div class="home-section">
+            <h2>Series & TV Shows</h2>
+            <div class="content" id="homeSeries"></div>
+        </div>
+        <div class="container">
+            <h1>Honey Flikx</h1>
+            <input type="text" id="movieName" placeholder="Enter movie or series name">
+            <button id="searchButton">Search</button>
+            <div id="result">
+                <div id="artwork"></div>
+                <div id="details"></div>
+                <div id="cast"></div>
+            </div>
+            <a href="#" id="watchButton" target="_blank">Watch Now</a>
+            <button id="fullscreenButton">Toggle Full Screen</button>
+            <iframe id="embedFrame" src="" frameborder="0"></iframe>
+            <div id="trendingMovies" class="content"></div>
+        </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const searchButton = document.getElementById("searchButton");
+        const movieNameInput = document.getElementById("movieName");
+        const resultElement = document.getElementById("result");
+        const watchButton = document.getElementById("watchButton");
+        const embedFrame = document.getElementById("embedFrame");
+
+        // Existing code for trending movies and TV shows
+
+       // Fetch trending movies from TMDb API
+       const trendingMoviesElement = document.getElementById("trendingMovies");
+        const tmdbApiKey = "906758f174a8895d483a49ff6b499690"; // Replace with your actual TMDb API key
+        const trendingMoviesUrl = `https://api.themoviedb.org/3/trending/movie/day?api_key=${tmdbApiKey}`;
+
+        fetch(trendingMoviesUrl)
+            .then(response => response.json())
+            .then(data => {
+                const trendingMovies = data.results;
+                const trendingMoviesHTML = trendingMovies
+                    .slice(0, 6) // Display the first 6 trending movies
+                    .map(movie => `
+                        <div class="trending-movie" data-movie-id="${movie.id}">
+                            <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
+                            <p>${movie.title}</p>
+                        </div>
+                    `)
+                    .join("");
+
+                trendingMoviesElement.innerHTML = trendingMoviesHTML;
+
+                // Fetch trending movies for the home page
+        const trendingNowElement = document.getElementById("trendingNow");
+        fetch(trendingMoviesUrl)
+            .then(response => response.json())
+            .then(data => {
+                const trendingMovies = data.results;
+                const trendingNowHTML = trendingMovies
+                    .slice(0, 6)
+                    .map(movie => `
+                        <div class="item" data-movie-id="${movie.id}">
+                            <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
+                            <p>${movie.title}</p>
+                        </div>
+                    `)
+                    .join("");
+                trendingNowElement.innerHTML = trendingNowHTML;
+            })
+            .catch(error => {
+                console.error("An error occurred while fetching trending movies:", error);
+                trendingNowElement.innerHTML = "Failed to fetch trending movies.";
+            });
+
+        // Fetch movies for the home page
+        const homeMoviesElement = document.getElementById("homeMovies");
+        fetch("https://api.themoviedb.org/3/movie/popular?api_key=" + tmdbApiKey)
+            .then(response => response.json())
+            .then(data => {
+                const movies = data.results;
+                const homeMoviesHTML = movies
+                    .slice(0, 6)
+                    .map(movie => `
+                        <div class="item" data-movie-id="${movie.id}">
+                            <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
+                            <p>${movie.title}</p>
+                        </div>
+                    `)
+                    .join("");
+                homeMoviesElement.innerHTML = homeMoviesHTML;
+            })
+            .catch(error => {
+                console.error("An error occurred while fetching movies:", error);
+                homeMoviesElement.innerHTML = "Failed to fetch movies.";
+            });
+
+        // Fetch TV shows for the home page
+        const homeSeriesElement = document.getElementById("homeSeries");
+        fetch("https://api.themoviedb.org/3/tv/popular?api_key=" + tmdbApiKey)
+            .then(response => response.json())
+            .then(data => {
+                const series = data.results;
+                const homeSeriesHTML = series
+                    .slice(0, 6)
+                    .map(show => `
+                        <div class="item" data-show-id="${show.id}">
+                            <img src="https://image.tmdb.org/t/p/w200/${show.poster_path}" alt="${show.name} Poster">
+                            <p>${show.name}</p>
+                        </div>
+                    `)
+                    .join("");
+                homeSeriesElement.innerHTML = homeSeriesHTML;
+            })
+            .catch(error => {
+                console.error("An error occurred while fetching TV shows:", error);
+                homeSeriesElement.innerHTML = "Failed to fetch TV shows.";
+            });
+    });
+
+        const searchMedia = (type) => {
+            const mediaName = movieNameInput.value;
+            if (mediaName) {
+                const apiKey = "c59fded4"; // Replace with your actual OMDb API key
+                const searchUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(mediaName)}&type=${type}`;
+
+                fetch(searchUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.Response === "True") {
+                            const searchResults = data.Search;
+                            const searchResultsHTML = searchResults
+                                .map(result => `
+                                    <div class="search-result" data-id="${result.imdbID}">
+                                        <img src="${result.Poster}" alt="${result.Title} Poster" width="100">
+                                        <p>${result.Title} (${result.Year})</p>
+                                    </div>
+                                `)
+                                .join("");
+
+                            resultElement.innerHTML = searchResultsHTML;
+
+                            // Open media details in iframe when clicked
+                            const searchResultElements = resultElement.querySelectorAll(".search-result");
+                            searchResultElements.forEach(element => {
+                                element.addEventListener("click", () => {
+                                    const mediaId = element.getAttribute("data-id");
+                                    const embedLink = `https://vidsrc.to/embed/${type}/${mediaId}`;
+                                    embedFrame.src = embedLink;
+                                });
+                            });
+                        } else {
+                            resultElement.innerHTML = "No results found.";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("An error occurred while searching:", error);
+                        resultElement.innerHTML = "An error occurred. Please try again.";
+                    });
+            }
+        };
+
+        searchButton.addEventListener("click", () => {
+            searchMedia("movie"); // Default to searching for movies
+        });
+
+        movieNameInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                searchMedia("movie");
+            }
+        });
+
+        // Toggle between searching for movies and TV shows
+        const searchToggle = document.getElementById("searchToggle");
+        searchToggle.addEventListener("click", () => {
+            const currentType = searchToggle.getAttribute("data-type");
+            if (currentType === "movie") {
+                searchToggle.textContent = "Search TV Shows";
+                searchToggle.setAttribute("data-type", "series");
+            } else {
+                searchToggle.textContent = "Search Movies";
+                searchToggle.setAttribute("data-type", "movie");
+            }
+        });
+    });
+    </script>
+</body>
+</html>
