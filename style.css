@@ -336,8 +336,12 @@ button:focus {
     .lightbox #embedFrame {
         width: 96%;
         height: 27%;
-        margin: 10% auto; /* Adjust the margin for mobile */
+        margin: 73% auto; /* Adjust the margin for mobile */
         display: block;
+    }
+    #fullscreenButton {
+        top: 451px;
+        right: 112px;
     }
 }
 
