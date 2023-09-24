@@ -339,6 +339,7 @@ button:focus {
         margin: 73% auto; /* Adjust the margin for mobile */
         display: block;
     }
+    
     #fullscreenButton {
         top: 451px;
         right: 112px;
