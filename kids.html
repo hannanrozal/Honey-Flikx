@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Series - Honey Flikx</title>
+    <title>Animated TV Shows for Kids - Honey Flikx</title>
     
     <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon/favicon-16x16.png">
@@ -119,17 +119,16 @@
                 if (loading) return; // Don't fetch more series if a fetch operation is already in progress
                 loading = true;
 
-                const seriesUrl = `https://api.themoviedb.org/3/tv/popular?api_key=${tmdbApiKey}&page=${page}`;
+                const seriesUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${tmdbApiKey}&page=${page}&with_genres=16,10751`; // Genres 16 (Animation) and 10751 (Family)
 
                 fetch(seriesUrl)
                     .then(response => response.json())
                     .then(data => {
                         const series = data.results;
 
-                        // Filter out Indian TV shows, anime, series without posters, and series without a name
+                        // Filter out series without posters and series without a name
                         const filteredSeries = series.filter(show => {
                             return (
-                                (show.origin_country.length === 0 || !show.origin_country.includes("")) &&
                                 show.poster_path &&
                                 show.name
                             );
@@ -182,8 +181,8 @@
                         .then(data => {
                             const searchResults = data.results;
 
-                            // Filter out shows without a poster path and those with 'Animation' in genre
-                            const filteredSearchResults = searchResults.filter(show => show.poster_path && !show.genres.some(genre => genre.name === 'Animation'));
+                            // Filter out shows without a poster path and those with 'Animation' and 'Family' in genres
+                            const filteredSearchResults = searchResults.filter(show => show.poster_path);
 
                             const searchResultsHTML = filteredSearchResults
                                 .map(show => `
