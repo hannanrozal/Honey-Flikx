@@ -81,12 +81,19 @@
                 <li><a href="/series.html" class="navbar-link">Series</a></li>
             </ul>
             <div class="navbar-search">
-                <input type="text" placeholder="Search">
-                <button>Search</button>
+                <input type="text" id="movieSearchInput" placeholder="Search"> <!-- Add this line -->
+                <button id="searchButton">Search</button>
             </div>
         </div>
     </div>
+    
     <div class="container">
+            <!-- Search Results Section (Initially Hidden) -->
+            <div class="home-section" id="searchedResultsSection" style="display: none;">
+                <h2>Searched Results</h2>
+                <div class="content" id="searchedResultsContent"></div>
+            </div>
+            <!-- Movies Section -->
         <div class="home-section">
             <h2>Movies</h2>
             <div class="content" id="moviesContent"></div>
@@ -99,108 +106,152 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const moviesContent = document.getElementById("moviesContent");
-            const tmdbApiKey = "906758f174a8895d483a49ff6b499690"; // Replace with your actual TMDb API key
-            let page = 1; // Track the current page of movie data
-            let loading = false; // Track if a fetch operation is in progress
+        const moviesContent = document.getElementById("moviesContent");
+        const searchedResultsContent = document.getElementById("searchedResultsContent");
+        const searchedResultsSection = document.getElementById("searchedResultsSection");
+        const tmdbApiKey = "906758f174a8895d483a49ff6b499690"; // Replace with your actual TMDb API key
+        let page = 1;
+        let loading = false;
 
-            function fetchMovies() {
-                if (loading) return; // Don't fetch more movies if a fetch operation is already in progress
-                loading = true;
+    function fetchMovies() {
+        if (loading) return;
+        loading = true;
 
-                const moviesUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}&page=${page}`;
+        const moviesUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}&page=${page}`;
 
-                fetch(moviesUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        const movies = data.results;
-                        const moviesHTML = movies
-                            .map(movie => `
-                                <div class="item" data-movie-id="${movie.id}">
-                                    <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
-                                    <p>${movie.title}</p>
-                                </div>
-                            `)
-                            .join("");
-                        moviesContent.innerHTML += moviesHTML;
+        fetch(moviesUrl)
+            .then(response => response.json())
+            .then(data => {
+                const movies = data.results;
+                const moviesHTML = movies
+                    .map(movie => `
+                        <div class="item" data-movie-id="${movie.id}">
+                            <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
+                            <p>${movie.title}</p>
+                        </div>
+                    `)
+                    .join("");
+                moviesContent.innerHTML += moviesHTML;
 
-                        loading = false; // Set loading to false after fetching and rendering movies
-                        page++; // Increment the page number for the next fetch
+                loading = false;
+                page++;
 
-                        // Add click event listener to movie posters on movies page
-                        const moviePosters = moviesContent.querySelectorAll(".item");
-                        moviePosters.forEach(poster => {
-                            poster.addEventListener("click", () => {
-                                const movieId = poster.getAttribute("data-movie-id");
-                                const embedLink = `https://vidsrc.to/embed/movie/${movieId}`;
-                                openLightbox(embedLink);
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.error("An error occurred while fetching movies:", error);
-                        moviesContent.innerHTML = "Failed to fetch movies.";
-                        loading = false; // Set loading to false in case of an error
+                const moviePosters = moviesContent.querySelectorAll(".item");
+                moviePosters.forEach(poster => {
+                    poster.addEventListener("click", () => {
+                        const movieId = poster.getAttribute("data-movie-id");
+                        const embedLink = `https://vidsrc.to/embed/movie/${movieId}`;
+                        openLightbox(embedLink);
                     });
-            }
-
-            // Add an event listener to fetch more movies when the user scrolls to the bottom
-            window.addEventListener('scroll', () => {
-                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-                    fetchMovies();
-                }
+                });
+            })
+            .catch(error => {
+                console.error("An error occurred while fetching movies:", error);
+                moviesContent.innerHTML = "Failed to fetch movies.";
+                loading = false;
             });
+    }
 
-            // Fetch the initial set of movies
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
             fetchMovies();
-        });
-
-        const lightbox = document.getElementById("lightbox");
-        const embedFrame = document.getElementById("embedFrame");
-        const closeButton = document.getElementById("closeButton");
-        const fullscreenButton = document.getElementById("fullscreenButton");
-
-        // Open the lightbox with embedded content
-        function openLightbox(embedLink) {
-            embedFrame.src = embedLink;
-            lightbox.style.display = "block";
         }
+    });
 
-        // Close the lightbox
-        function closeLightbox() {
-            embedFrame.src = "";
-            lightbox.style.display = "none";
+    function performMovieSearch(query) {
+        if (query) {
+            const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}`;
+
+            fetch(searchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const searchResults = data.results;
+
+                    const filteredSearchResults = searchResults.filter(movie => movie.poster_path);
+
+                    const searchResultsHTML = filteredSearchResults
+                        .map(movie => `
+                            <div class="item" data-movie-id="${movie.id}">
+                                <img src="https://image.tmdb.org/t/p/w200/${movie.poster_path}" alt="${movie.title} Poster">
+                                <p>${movie.title}</p>
+                            </div>
+                        `)
+                        .join("");
+                    
+                    searchedResultsContent.innerHTML = searchResultsHTML;
+                    searchedResultsSection.style.display = "block";
+
+                    // Add click event listener to movie posters on search results
+                    const searchMoviePosters = searchedResultsContent.querySelectorAll(".item");
+                    searchMoviePosters.forEach(poster => {
+                        poster.addEventListener("click", () => {
+                            const movieId = poster.getAttribute("data-movie-id");
+                            const embedLink = `https://vidsrc.to/embed/movie/${movieId}`;
+                            openLightbox(embedLink);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error("An error occurred while searching for movies:", error);
+                    searchedResultsContent.innerHTML = "Failed to perform the search.";
+                });
+        } else {
+            searchedResultsContent.innerHTML = "";
+            searchedResultsSection.style.display = "none";
         }
+    }
 
-        // Add click event listener to close button
-        closeButton.addEventListener("click", closeLightbox);
+    const searchButton = document.getElementById("searchButton");
+    searchButton.addEventListener("click", () => {
+        const query = document.getElementById("movieSearchInput").value;
+        performMovieSearch(query);
+    });
 
-        // Add click event listener to fullscreen button
-        fullscreenButton.addEventListener("click", () => {
-            if (embedFrame.requestFullscreen) {
-                embedFrame.requestFullscreen();
-            } else if (embedFrame.mozRequestFullScreen) { // Firefox
-                embedFrame.mozRequestFullScreen();
-            } else if (embedFrame.webkitRequestFullscreen) { // Chrome, Safari, and Opera
-                embedFrame.webkitRequestFullscreen();
-            } else if (embedFrame.msRequestFullscreen) { // IE/Edge
-                embedFrame.msRequestFullscreen();
-            }
-        });
-
-        // New code block added
-        const iframeLink = document.getElementById("iframeLink");
-
-        iframeLink.addEventListener("click", function(event) {
-            event.preventDefault(); // Prevent the default behavior (opening a new tab)
-            const embedLink = "https://example.com/embed"; // Replace with your actual embed link
-            openIframe(embedLink);
-        });
-
-        function openIframe(embedLink) {
-            embedFrame.src = embedLink;
-            lightbox.style.display = "block";
+    const movieSearchInput = document.getElementById("movieSearchInput");
+    movieSearchInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            const query = movieSearchInput.value;
+            performMovieSearch(query);
         }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "/") {
+            movieSearchInput.focus();
+        }
+    });
+
+    fetchMovies();
+});
+
+const lightbox = document.getElementById("lightbox");
+const embedFrame = document.getElementById("embedFrame");
+const closeButton = document.getElementById("closeButton");
+const fullscreenButton = document.getElementById("fullscreenButton");
+
+function openLightbox(embedLink) {
+    embedFrame.src = embedLink;
+    lightbox.style.display = "block";
+}
+
+function closeLightbox() {
+    embedFrame.src = "";
+    lightbox.style.display = "none";
+}
+
+closeButton.addEventListener("click", closeLightbox);
+
+fullscreenButton.addEventListener("click", () => {
+    if (embedFrame.requestFullscreen) {
+        embedFrame.requestFullscreen();
+    } else if (embedFrame.mozRequestFullScreen) {
+        embedFrame.mozRequestFullScreen();
+    } else if (embedFrame.webkitRequestFullscreen) {
+        embedFrame.webkitRequestFullscreen();
+    } else if (embedFrame.msRequestFullscreen) {
+        embedFrame.msRequestFullscreen();
+    }
+});
     </script>
 </body>
 </html>
