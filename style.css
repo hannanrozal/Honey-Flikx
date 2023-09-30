@@ -229,7 +229,7 @@ button:focus {
 }
 
 .home-section .content .item {
-    flex: 0 0 calc(14.33% - 20px);
+    flex: 0 0 calc(14.33% - -11px);
     border-radius: 8px;
     transition: transform 0.3s, box-shadow 0.3s;
 }
