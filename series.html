@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Series - Honey Flikx</title>
-    
+    <title>Series & TV Shows - Honey Flikx</title>
+
     <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon/favicon-32x32.png">
@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#141414">
 
     <style>
-        /* Style for the fullscreen button (if needed) */
+        /* Style for the fullscreen button */
         #fullscreenButton {
             position: absolute;
             top: 10px;
@@ -52,7 +52,7 @@
             }
         }
 
-        /* Other styles for larger screens (if needed) */
+        /* Other styles for larger screens */
         @media screen and (min-width: 769px) {
             #fullscreenButton {
                 top: 812px;
@@ -75,15 +75,15 @@
 
     <div class="navbar">
         <div class="navbar-container">
-            <a href="#" class="navbar-logo">Honey Flikx</a>
+            <a href="honeyflikx.davidsstyle.com" class="navbar-logo">Honey Flikx</a>
             <ul class="navbar-links">
-                <li><a href="/index.html" class="navbar-link">Home</a></li>
+                <li><a href="honeyflikx.davidsstyle.com" class="navbar-link">Home</a></li>
                 <li><a href="movies.html" class="navbar-link">Movies</a></li>
                 <li><a href="/series.html" class="navbar-link">Series</a></li>
                 <li><a href="/kids.html" class="navbar-link">Kids</a></li>
             </ul>
             <div class="navbar-search">
-                <input type="text" id="seriesSearchInput" placeholder="Search"> <!-- Updated ID to seriesSearchInput -->
+                <input type="text" id="seriesSearchInput" placeholder="Search">
                 <button id="searchButton">Search</button>
             </div>
         </div>
@@ -104,19 +104,19 @@
     <div id="lightbox" class="lightbox">
         <span id="closeButton" class="close-button">×</span>
         <iframe id="embedFrame" src="" frameborder="0"></iframe>
-        <button id="fullscreenButton">Fullscreen</button> <!-- Fullscreen button -->
+        <button id="fullscreenButton">Fullscreen</button>
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
             const seriesContent = document.getElementById("seriesContent");
-            const searchedResultsContent = document.getElementById("searchedResultsContent"); // Added this line
-            const tmdbApiKey = "906758f174a8895d483a49ff6b499690"; // Replace with your actual TMDb API key
-            let page = 1; // Track the current page of series data
-            let loading = false; // Track if a fetch operation is in progress
+            const searchedResultsContent = document.getElementById("searchedResultsContent");
+            const tmdbApiKey = "906758f174a8895d483a49ff6b499690";
+            let page = 1;
+            let loading = false;
 
             function fetchSeries() {
-                if (loading) return; // Don't fetch more series if a fetch operation is already in progress
+                if (loading) return;
                 loading = true;
 
                 const seriesUrl = `https://api.themoviedb.org/3/tv/popular?api_key=${tmdbApiKey}&page=${page}`;
@@ -126,14 +126,7 @@
                     .then(data => {
                         const series = data.results;
 
-                        // Filter out Indian TV shows, anime, series without posters, and series without a name
-                        const filteredSeries = series.filter(show => {
-                            return (
-                                (show.origin_country.length === 0 || !show.origin_country.includes("")) &&
-                                show.poster_path &&
-                                show.name
-                            );
-                        });
+                        const filteredSeries = series.filter(show => show.poster_path && show.name);
 
                         const seriesHTML = filteredSeries
                             .map(show => `
@@ -145,10 +138,9 @@
                             .join("");
                         seriesContent.innerHTML += seriesHTML;
 
-                        loading = false; // Set loading to false after fetching and rendering series
-                        page++; // Increment the page number for the next fetch
+                        loading = false;
+                        page++;
 
-                        // Add click event listener to TV show posters on series page (open in iframe)
                         const tvShowPosters = seriesContent.querySelectorAll(".item");
                         tvShowPosters.forEach(poster => {
                             poster.addEventListener("click", () => {
@@ -161,18 +153,16 @@
                     .catch(error => {
                         console.error("An error occurred while fetching series:", error);
                         seriesContent.innerHTML = "Failed to fetch TV shows.";
-                        loading = false; // Set loading to false in case of an error
+                        loading = false;
                     });
             }
 
-            // Add an event listener to fetch more series when the user scrolls to the bottom
             window.addEventListener('scroll', () => {
                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
                     fetchSeries();
                 }
             });
 
-            // Function to perform a TV show search
             function performSeriesSearch(query) {
                 if (query) {
                     const searchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}`;
@@ -182,8 +172,7 @@
                         .then(data => {
                             const searchResults = data.results;
 
-                            // Filter out shows without a poster path and those with 'Animation' in genre
-                            const filteredSearchResults = searchResults.filter(show => show.poster_path && !show.genres.some(genre => genre.name === 'Animation'));
+                            const filteredSearchResults = searchResults.filter(show => show.poster_path);
 
                             const searchResultsHTML = filteredSearchResults
                                 .map(show => `
@@ -194,12 +183,9 @@
                                 `)
                                 .join("");
                             
-                            // Clear the existing content and display the search results in the lightbox
                             searchedResultsContent.innerHTML = searchResultsHTML;
-                            const searchedResultsSection = document.getElementById("searchedResultsSection");
                             searchedResultsSection.style.display = "block";
 
-                            // Add click event listener to TV show posters on search results (open in iframe)
                             const searchShowPosters = searchedResultsContent.querySelectorAll(".item");
                             searchShowPosters.forEach(poster => {
                                 poster.addEventListener("click", () => {
@@ -215,34 +201,37 @@
                         });
                 } else {
                     searchedResultsContent.innerHTML = "";
-                    const searchedResultsSection = document.getElementById("searchedResultsSection");
                     searchedResultsSection.style.display = "none";
                 }
             }
 
-            // Add an event listener to the search input field for Enter key press
-            const seriesSearchInput = document.getElementById("seriesSearchInput");
-                seriesSearchInput.addEventListener("keydown", event => {
-                    if (event.key === "Enter") {
-                        const query = seriesSearchInput.value;
-                        performSeriesSearch(query);
-                    }
-                });
-
-                // Add an event listener to the document to detect the "/" key press
-                document.addEventListener("keydown", event => {
-                    if (event.key === "/") {
-                        seriesSearchInput.focus(); // Focus on the search input field
-                    }
-                });
-
-                // Fetch the initial set of series
-                fetchSeries();
+            const searchButton = document.getElementById("searchButton");
+            searchButton.addEventListener("click", () => {
+                const query = document.getElementById("seriesSearchInput").value;
+                performSeriesSearch(query);
             });
+
+            const seriesSearchInput = document.getElementById("seriesSearchInput");
+            seriesSearchInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    const query = seriesSearchInput.value;
+                    performSeriesSearch(query);
+                }
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "/") {
+                    seriesSearchInput.focus();
+                }
+            });
+
+            fetchSeries();
+        });
 
         const lightbox = document.getElementById("lightbox");
         const embedFrame = document.getElementById("embedFrame");
         const closeButton = document.getElementById("closeButton");
+        const fullscreenButton = document.getElementById("fullscreenButton");
 
         function openLightbox(embedLink) {
             embedFrame.src = embedLink;
@@ -255,6 +244,18 @@
         }
 
         closeButton.addEventListener("click", closeLightbox);
+
+        fullscreenButton.addEventListener("click", () => {
+            if (embedFrame.requestFullscreen) {
+                embedFrame.requestFullscreen();
+            } else if (embedFrame.mozRequestFullScreen) {
+                embedFrame.mozRequestFullScreen();
+            } else if (embedFrame.webkitRequestFullscreen) {
+                embedFrame.webkitRequestFullscreen();
+            } else if (embedFrame.msRequestFullscreen) {
+                embedFrame.msRequestFullscreen();
+            }
+        });
     </script>
 </body>
 </html>

@@ -75,9 +75,9 @@
 
     <div class="navbar">
         <div class="navbar-container">
-            <a href="#" class="navbar-logo">Honey Flikx</a>
+            <a href="honeyflikx.davidsstyle.com" class="navbar-logo">Honey Flikx</a>
             <ul class="navbar-links">
-                <li><a href="/index.html" class="navbar-link">Home</a></li>
+                <li><a href="honeyflikx.davidsstyle.com" class="navbar-link">Home</a></li>
                 <li><a href="movies.html" class="navbar-link">Movies</a></li>
                 <li><a href="/series.html" class="navbar-link">Series</a></li>
                 <li><a href="/kids.html" class="navbar-link">Kids</a></li>
@@ -97,7 +97,7 @@
         </div>
         <!-- Series & TV Shows Section -->
         <div class="home-section">
-            <h2>Series & TV Shows</h2>
+            <h2>Kids Zone 🌸</h2>
             <div class="content" id="seriesContent"></div>
         </div>
     </div>
@@ -108,25 +108,24 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function() {
             const seriesContent = document.getElementById("seriesContent");
-            const searchedResultsContent = document.getElementById("searchedResultsContent"); // Added this line
-            const tmdbApiKey = "906758f174a8895d483a49ff6b499690"; // Replace with your actual TMDb API key
-            let page = 1; // Track the current page of series data
-            let loading = false; // Track if a fetch operation is in progress
+            const searchedResultsContent = document.getElementById("searchedResultsContent");
+            const tmdbApiKey = "906758f174a8895d483a49ff6b499690";
+            let page = 1;
+            let loading = false;
 
             function fetchSeries() {
-                if (loading) return; // Don't fetch more series if a fetch operation is already in progress
+                if (loading) return;
                 loading = true;
 
-                const seriesUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${tmdbApiKey}&page=${page}&with_genres=16,10751`; // Genres 16 (Animation) and 10751 (Family)
+                const seriesUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${tmdbApiKey}&page=${page}&with_genres=16,10751`;
 
                 fetch(seriesUrl)
                     .then(response => response.json())
                     .then(data => {
                         const series = data.results;
 
-                        // Filter out series without posters and series without a name
                         const filteredSeries = series.filter(show => {
                             return (
                                 show.poster_path &&
@@ -144,10 +143,9 @@
                             .join("");
                         seriesContent.innerHTML += seriesHTML;
 
-                        loading = false; // Set loading to false after fetching and rendering series
-                        page++; // Increment the page number for the next fetch
+                        loading = false;
+                        page++;
 
-                        // Add click event listener to TV show posters on series page (open in iframe)
                         const tvShowPosters = seriesContent.querySelectorAll(".item");
                         tvShowPosters.forEach(poster => {
                             poster.addEventListener("click", () => {
@@ -160,18 +158,16 @@
                     .catch(error => {
                         console.error("An error occurred while fetching series:", error);
                         seriesContent.innerHTML = "Failed to fetch TV shows.";
-                        loading = false; // Set loading to false in case of an error
+                        loading = false;
                     });
             }
 
-            // Add an event listener to fetch more series when the user scrolls to the bottom
             window.addEventListener('scroll', () => {
                 if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
                     fetchSeries();
                 }
             });
 
-            // Function to perform a TV show search
             function performSeriesSearch(query) {
                 if (query) {
                     const searchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}`;
@@ -181,8 +177,13 @@
                         .then(data => {
                             const searchResults = data.results;
 
-                            // Filter out shows without a poster path and those with 'Animation' and 'Family' in genres
-                            const filteredSearchResults = searchResults.filter(show => show.poster_path);
+                            const filteredSearchResults = searchResults.filter(show => {
+                                return (
+                                    show.poster_path &&
+                                    show.name &&
+                                    (show.genre_ids.includes(16) || show.genre_ids.includes(10751))
+                                );
+                            });
 
                             const searchResultsHTML = filteredSearchResults
                                 .map(show => `
@@ -192,13 +193,11 @@
                                     </div>
                                 `)
                                 .join("");
-                            
-                            // Clear the existing content and display the search results in the lightbox
+
                             searchedResultsContent.innerHTML = searchResultsHTML;
                             const searchedResultsSection = document.getElementById("searchedResultsSection");
                             searchedResultsSection.style.display = "block";
 
-                            // Add click event listener to TV show posters on search results (open in iframe)
                             const searchShowPosters = searchedResultsContent.querySelectorAll(".item");
                             searchShowPosters.forEach(poster => {
                                 poster.addEventListener("click", () => {
@@ -219,41 +218,52 @@
                 }
             }
 
-            // Add an event listener to the search input field for Enter key press
             const seriesSearchInput = document.getElementById("seriesSearchInput");
-                seriesSearchInput.addEventListener("keydown", event => {
-                    if (event.key === "Enter") {
-                        const query = seriesSearchInput.value;
-                        performSeriesSearch(query);
-                    }
-                });
-
-                // Add an event listener to the document to detect the "/" key press
-                document.addEventListener("keydown", event => {
-                    if (event.key === "/") {
-                        seriesSearchInput.focus(); // Focus on the search input field
-                    }
-                });
-
-                // Fetch the initial set of series
-                fetchSeries();
+            seriesSearchInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    const query = seriesSearchInput.value;
+                    performSeriesSearch(query);
+                }
             });
 
-        const lightbox = document.getElementById("lightbox");
-        const embedFrame = document.getElementById("embedFrame");
-        const closeButton = document.getElementById("closeButton");
+            document.addEventListener("keydown", event => {
+                if (event.key === "/") {
+                    seriesSearchInput.focus();
+                }
+            });
 
-        function openLightbox(embedLink) {
-            embedFrame.src = embedLink;
-            lightbox.style.display = "block";
-        }
+            fetchSeries();
 
-        function closeLightbox() {
-            embedFrame.src = "";
-            lightbox.style.display = "none";
-        }
+            const lightbox = document.getElementById("lightbox");
+            const embedFrame = document.getElementById("embedFrame");
+            const closeButton = document.getElementById("closeButton");
+            const fullscreenButton = document.getElementById("fullscreenButton");
 
-        closeButton.addEventListener("click", closeLightbox);
+            fullscreenButton.addEventListener("click", () => {
+                const embedLink = embedFrame.getAttribute("src");
+                if (embedFrame.requestFullscreen) {
+                    embedFrame.requestFullscreen();
+                } else if (embedFrame.mozRequestFullScreen) {
+                    embedFrame.mozRequestFullScreen();
+                } else if (embedFrame.webkitRequestFullscreen) {
+                    embedFrame.webkitRequestFullscreen();
+                } else if (embedFrame.msRequestFullscreen) {
+                    embedFrame.msRequestFullscreen();
+                }
+            });
+
+            function openLightbox(embedLink) {
+                embedFrame.src = embedLink;
+                lightbox.style.display = "block";
+            }
+
+            function closeLightbox() {
+                embedFrame.src = "";
+                lightbox.style.display = "none";
+            }
+
+            closeButton.addEventListener("click", closeLightbox);
+        });
     </script>
 </body>
 </html>
